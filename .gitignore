@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# 데이터와 샘플은 절대 커밋하지 않음
+data/
+testdata/
+*.jsonl
+*.bin
+logs/
+.env
