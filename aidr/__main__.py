@@ -1,0 +1,40 @@
+"""명령줄 실행: python -m aidr scan <폴더> [--hashes 목록] [--out 결과.json]"""
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from aidr.hashes import load_hash_list
+from aidr.scanner import scan_folder
+
+DEFAULT_HASHES = Path(__file__).resolve().parent.parent / "hashes" / "known_bad.txt"
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(prog="aidr")
+    sub = parser.add_subparsers(dest="command", required=True)
+    scan = sub.add_parser("scan", help="폴더 검사")
+    scan.add_argument("folder", type=Path)
+    scan.add_argument("--hashes", type=Path, default=DEFAULT_HASHES)
+    scan.add_argument("--out", type=Path, help="결과 JSON 파일 경로 (없으면 화면에 출력)")
+    args = parser.parse_args(argv)
+
+    if not args.folder.is_dir():
+        print(f"폴더가 아님: {args.folder}", file=sys.stderr)
+        return 2
+
+    bad = load_hash_list(args.hashes) if args.hashes.exists() else set()
+    report = scan_folder(args.folder, bad)
+    text = json.dumps(report, ensure_ascii=False, indent=2)
+
+    if args.out:
+        args.out.write_text(text, encoding="utf-8")
+        print(f"검사 완료: {report['total']}개, 결과 저장 → {args.out}")
+        print("요약:", report["summary"])
+    else:
+        print(text)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
