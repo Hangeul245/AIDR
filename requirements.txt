@@ -1,2 +1,5 @@
 pytest==9.1.1
 yara-python==4.5.4
+thrember @ git+https://github.com/FutureComputing4AI/EMBER2024.git@0ef753e81d98bf209f71b03cd331dfc190b5b54d
+signify>=0.7.1,<0.8
+oscrypto @ git+https://github.com/wbond/oscrypto.git@76bfdcb7285d856c44f8d0fbafe0ecca1c6d2f8b
