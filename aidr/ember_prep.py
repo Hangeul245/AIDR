@@ -60,7 +60,7 @@ def vectorize_subset(files, out_dir, name,      processes=None, require_type=Fal
     else:
         pool = multiprocessing.Pool(processes=processes, initializer=_init_worker)
         mapper = lambda lines: pool.imap(func, lines, chunksize=16)
-        labels, file_stats, failures = [], [], []
+    labels, file_stats, failures = [], [], []
     try:
         with x_tmp.open("wb") as xf:
             for path in files:
@@ -83,7 +83,7 @@ def vectorize_subset(files, out_dir, name,      processes=None, require_type=Fal
         if pool is not None:
             pool.close()
             pool.join()
-        y = np.asarray(labels, dtype=np.int32)
+    y = np.asarray(labels, dtype=np.int32)
     y_tmp = out_dir / f"y_{name}.dat.tmp"
     y.tofile(y_tmp)
 
@@ -174,7 +174,7 @@ def main(argv=None):
             return 1
         print(f"[{subset}] 파일 {len(files)}개 시작 (프로세스 {args.processes}개)", flush=True)
         meta = vectorize_subset(files, args.out, subset, processes=args.processes,
-                                require_type=(subset == "challenge"))
+        require_type=(subset == "challenge"))
         t = meta["totals"]
         print(f"[{subset}] 완료: 저장 {t['ok']}행 (악성 {meta['malicious']}, 정상 {meta['benign']}), "
               f"라벨 없음 {t['nolabel']}, 다른 형식 {t['other']}, 실패 {t['fail']}", flush=True)
