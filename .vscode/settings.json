@@ -1,0 +1,3 @@
+{
+  "taintGuard.sourceProfiles": ["web", "cli", "file", "network", "llm"]
+}
