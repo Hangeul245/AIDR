@@ -1,7 +1,7 @@
 """명령줄 실행
 python -m aidr scan <폴더> [--hashes 목록 ...] [--rules 규칙] [--out 결과.json]
 python -m aidr update   (MalwareBazaar 해시 목록 갱신)
-python -m aidr features <폴더> --out 특징.jsonl [--limit N] [--label 0]   (PE 특징 추출 + 요약)
+python -m aidr features <폴더> --out 특징.jsonl [--limit N] [--label 0] [--recursive]   (PE 특징 추출 + 요약)
 """
 import argparse
 import json
@@ -52,6 +52,7 @@ def main(argv=None) -> int:
     feat.add_argument("--out", type=Path, required=True, help="결과 JSONL 경로 (저장소 바깥에 둘 것)")
     feat.add_argument("--limit", type=int, help="최대 파일 수")
     feat.add_argument("--label", type=int, choices=[0, 1], help="정답 표시 (정상 기준선이면 0)")
+    feat.add_argument("--recursive", action="store_true", help="하위 폴더까지 찾기 (서드파티 기준선용)")
 
     args = parser.parse_args(argv)
 
@@ -64,7 +65,7 @@ def main(argv=None) -> int:
         if not args.folder.is_dir():
             print(f"폴더가 아님: {args.folder}", file=sys.stderr)
             return 2
-        stats = pe_features.extract_folder(args.folder, args.out, args.limit, args.label)
+        stats = pe_features.extract_folder(args.folder, args.out, args.limit, args.label, args.recursive)
         print(f"특징 추출: {stats['written']}개 저장, PE 아님 {stats['not_pe']}개, 실패 {len(stats['failed'])}개 → {args.out}")
         for name, err in stats["failed"][:10]:
             print(f"  실패: {name} ({err})", file=sys.stderr)

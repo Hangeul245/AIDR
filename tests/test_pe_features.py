@@ -79,3 +79,17 @@ def test_signify_version_supports_thrember():
     pytest.importorskip("thrember")
     from signify.x509 import CertificateStore
     assert issubclass(CertificateStore, list)
+
+def test_folder_recursive_finds_nested_files(tmp_path, monkeypatch):
+    # thrember 없이 폴더 찾기만 확인 (추출은 가짜로 대신)
+    monkeypatch.setattr(pe_features, "identify", lambda p: "pe")
+    monkeypatch.setattr(pe_features, "extract_file", lambda p: {})
+    nested = tmp_path / "src" / "Program" / "bin"
+    nested.mkdir(parents=True)
+    (nested / "app.exe").write_bytes(b"x")
+    out = tmp_path / "out.jsonl"
+
+    assert pe_features.extract_folder(tmp_path / "src", out)["written"] == 0
+    assert pe_features.extract_folder(tmp_path / "src", out, recursive=True)["written"] == 1
+    row = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+    assert row["file_name"] == "app.exe"  # 하위 폴더 경로는 남기지 않음

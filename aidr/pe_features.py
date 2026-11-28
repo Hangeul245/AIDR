@@ -44,10 +44,14 @@ def extract_file(path):
         raise FeatureError(f"추출 실패: {type(e).__name__}") from None
 
 
-def extract_folder(root, out_path, limit=None, label=None):
-    """폴더 바로 아래의 exe·dll에서 특징을 뽑아 JSONL(한 줄 = 파일 하나)로 저장한다."""
+def extract_folder(root, out_path, limit=None, label=None, recursive=False):
+    """폴더의 exe·dll에서 특징을 뽑아 JSONL(한 줄 = 파일 하나)로 저장한다.
+
+    recursive=False면 폴더 바로 아래만, True면 하위 폴더까지 (서드파티 기준선은 프로그램마다 폴더가 따로 있음)
+    """
     root, out_path = Path(root), Path(out_path)
-    files = sorted({p for pat in PATTERNS for p in root.glob(pat) if p.is_file()})
+    find = root.rglob if recursive else root.glob
+    files = sorted({p for pat in PATTERNS for p in find(pat) if p.is_file()})
     if limit:
         # 이름순 앞쪽만 몰리지 않게 전체에서 고르게 건너뛰며 고른다
         files = files[::max(1, len(files) // limit)]
@@ -65,7 +69,7 @@ def extract_folder(root, out_path, limit=None, label=None):
             except (FeatureError, OSError) as e:
                 stats["failed"].append((p.name, str(e)))
                 continue
-            # 기준선은 시스템 파일이라 이름만 남긴다 (전체 경로는 남기지 않음)
+            # 기준선은 이름만 남긴다 (전체 경로는 남기지 않음, 하위 폴더 이름도 안 남김)
             raw["file_name"] = p.name
             if label is not None:
                 raw["label"] = label
